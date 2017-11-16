@@ -40,12 +40,14 @@ import (
 // unwrapped, as they are not derived from a "parent" context.
 func Unwrap(ctx context.Context) context.Context {
 
+	// Guard against nil contexts
 	if ctx == nil {
 		return nil
 	}
 
 	contextVal := reflect.ValueOf(ctx).Elem()
 
+	// Guard against types with no fields (such as context.Background)
 	if contextVal.Kind() != reflect.Struct {
 		return nil
 	}
@@ -76,7 +78,7 @@ func Key(ctx context.Context) (interface{}, bool) {
 	contextVal := reflect.ValueOf(ctx).Elem()
 
 	// Guard against types with no fields (such as context.Background)
-	if contextVal.Kind().String() != "struct" {
+	if contextVal.Kind() != reflect.Struct {
 		return nil, false
 	}
 
