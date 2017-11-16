@@ -10,6 +10,29 @@ import (
 	"unsafe"
 )
 
+func Unwrap(ctx context.Context) context.Context {
+
+	if ctx == nil {
+		return nil
+	}
+
+	contextVal := reflect.ValueOf(ctx).Elem()
+
+	if contextVal.Kind() != reflect.Struct {
+		return nil
+	}
+
+	// Obtain the struct field "Context"
+	contextField := contextVal.FieldByName("Context")
+
+	// Check to see if our field is actually a context
+	if parentContext, ok := contextField.Interface().(context.Context); ok {
+		return parentContext
+	}
+
+	return nil
+}
+
 func Key(ctx context.Context) (interface{}, bool) {
 
 	// Guard against nil contexts
