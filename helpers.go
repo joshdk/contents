@@ -58,3 +58,15 @@ func Pairs(ctx context.Context) []Pair {
 
 	return pairs
 }
+
+// Map will return every key:value pair contained withing the context. The
+// mapped value is the result of calling ".Value(key)" on the given context.
+func Map(ctx context.Context) map[interface{}]interface{} {
+	pairs := map[interface{}]interface{}{}
+
+	for _, key := range Keys(ctx) {
+		pairs[key] = ctx.Value(key)
+	}
+
+	return pairs
+}
