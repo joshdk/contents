@@ -8,6 +8,38 @@
 
 🔍 Inspect private context.Context internals
 
+## Installing
+
+You can fetch this library by running the following
+
+    go get -u github.com/joshdk/contents
+
+## Usage
+
+```go
+import (
+	"context"
+	"fmt"
+	"github.com/joshdk/contents"
+)
+
+// Build a context
+ctx := context.Background()
+ctx = context.WithValue(ctx, "key-1", "val-1")
+ctx = context.WithValue(ctx, "key-2", "val-2")
+ctx = context.WithValue(ctx, "key-3", "val-3")
+
+// Extract list of all keys
+keys := contents.Keys(ctx)
+
+for _, key := range keys {
+	fmt.Printf("Context contains %q → %q\n", key, ctx.Value(key))
+	// Context contains "key-1" → "val-1"
+	// Context contains "key-2" → "val-2"
+	// Context contains "key-3" → "val-3"
+}
+```
+
 ## License
 
 This library is distributed under the [MIT License](https://opensource.org/licenses/MIT), see LICENSE.txt for more information.
