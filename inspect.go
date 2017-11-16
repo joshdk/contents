@@ -22,6 +22,9 @@
 //
 // The functions contained within this package care mostly about "Can this
 // context level be unwrapped?" and "Does this context level contain a key?"
+//
+// This package also contains some functions that compose these two basic
+// operations into helpers.
 package contents
 
 import (
