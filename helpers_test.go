@@ -10,26 +10,32 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-func TestKeys(t *testing.T) {
+func TestHelpers(t *testing.T) {
 
 	tests := []struct {
-		title string
-		ctx   context.Context
-		keys  []interface{}
+		title   string
+		ctx     context.Context
+		keys    []interface{}
+		pairs   []Pair
+		mapping map[interface{}]interface{}
 	}{
 		{
-			title: "nil context",
-			ctx:   nil,
+			title:   "nil context",
+			ctx:     nil,
+			mapping: map[interface{}]interface{}{},
 		},
 		{
-			title: "background context",
-			ctx:   context.Background(),
+			title:   "background context",
+			ctx:     context.Background(),
+			mapping: map[interface{}]interface{}{},
 		},
 		{
-			title: "todo context",
-			ctx:   context.TODO(),
+			title:   "todo context",
+			ctx:     context.TODO(),
+			mapping: map[interface{}]interface{}{},
 		},
 		{
 			title: "cancel context",
@@ -39,6 +45,7 @@ func TestKeys(t *testing.T) {
 				_ = cancel
 				return ctx
 			}(),
+			mapping: map[interface{}]interface{}{},
 		},
 		{
 			title: "canceled cancel context",
@@ -48,6 +55,7 @@ func TestKeys(t *testing.T) {
 				cancel()
 				return ctx
 			}(),
+			mapping: map[interface{}]interface{}{},
 		},
 		{
 			title: "timeout context",
@@ -57,6 +65,7 @@ func TestKeys(t *testing.T) {
 				_ = cancel
 				return ctx
 			}(),
+			mapping: map[interface{}]interface{}{},
 		},
 		{
 			title: "canceled timeout context",
@@ -66,6 +75,7 @@ func TestKeys(t *testing.T) {
 				cancel()
 				return ctx
 			}(),
+			mapping: map[interface{}]interface{}{},
 		},
 		{
 			title: "single key context",
@@ -75,6 +85,12 @@ func TestKeys(t *testing.T) {
 				return ctx
 			}(),
 			keys: []interface{}{"key"},
+			pairs: []Pair{
+				{"key", "value"},
+			},
+			mapping: map[interface{}]interface{}{
+				"key": "value",
+			},
 		},
 		{
 			title: "multi key context",
@@ -86,6 +102,16 @@ func TestKeys(t *testing.T) {
 				return ctx
 			}(),
 			keys: []interface{}{"key-1", "key-2", "key-3"},
+			pairs: []Pair{
+				{"key-1", "value-1"},
+				{"key-2", "value-2"},
+				{"key-3", "value-3"},
+			},
+			mapping: map[interface{}]interface{}{
+				"key-1": "value-1",
+				"key-2": "value-2",
+				"key-3": "value-3",
+			},
 		},
 		{
 			title: "cancel context with keys",
@@ -99,6 +125,16 @@ func TestKeys(t *testing.T) {
 				return ctx
 			}(),
 			keys: []interface{}{"key-1", "key-2", "key-3"},
+			pairs: []Pair{
+				{"key-1", "value-1"},
+				{"key-2", "value-2"},
+				{"key-3", "value-3"},
+			},
+			mapping: map[interface{}]interface{}{
+				"key-1": "value-1",
+				"key-2": "value-2",
+				"key-3": "value-3",
+			},
 		},
 		{
 			title: "timeout context with keys",
@@ -112,6 +148,16 @@ func TestKeys(t *testing.T) {
 				return ctx
 			}(),
 			keys: []interface{}{"key-1", "key-2", "key-3"},
+			pairs: []Pair{
+				{"key-1", "value-1"},
+				{"key-2", "value-2"},
+				{"key-3", "value-3"},
+			},
+			mapping: map[interface{}]interface{}{
+				"key-1": "value-1",
+				"key-2": "value-2",
+				"key-3": "value-3",
+			},
 		},
 		{
 			title: "duplicate key context",
@@ -124,6 +170,17 @@ func TestKeys(t *testing.T) {
 				return ctx
 			}(),
 			keys: []interface{}{"key-1", "key-2", "key-3", "key-2"},
+			pairs: []Pair{
+				{"key-1", "value-1"},
+				{"key-2", "value-2"},
+				{"key-3", "value-3"},
+				{"key-2", "VALUE-TWO"},
+			},
+			mapping: map[interface{}]interface{}{
+				"key-1": "value-1",
+				"key-2": "VALUE-TWO",
+				"key-3": "value-3",
+			},
 		},
 	}
 
@@ -133,12 +190,22 @@ func TestKeys(t *testing.T) {
 
 		t.Run(name, func(t *testing.T) {
 
-			actual := Keys(test.ctx)
+			keys := Keys(test.ctx)
+			pairs := Pairs(test.ctx)
+			mapping := Map(test.ctx)
 
-			assert.Equal(t, test.keys, actual)
+			require.Equal(t, len(keys), len(pairs))
 
-			for _, key := range actual {
-				assert.NotNil(t, test.ctx.Value(key))
+			for index := range keys {
+				assert.Equal(t, keys[index], pairs[index].Key)
+			}
+
+			assert.Equal(t, test.keys, keys)
+			assert.Equal(t, test.pairs, pairs)
+			assert.Equal(t, test.mapping, mapping)
+
+			for key, value := range mapping {
+				assert.Equal(t, test.ctx.Value(key), value)
 			}
 
 		})
