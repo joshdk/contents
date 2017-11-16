@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -70,6 +71,12 @@ func TestUnwrap(t *testing.T) {
 				wrapped2 := context.WithValue(wrapped1, "key-2", "value-2")
 				wrapped3 := context.WithValue(wrapped2, "key-3", "value-3")
 				return wrapped2, wrapped3
+			},
+		},
+		{
+			title: "broken context",
+			wrapper: func() (context.Context, context.Context) {
+				return nil, &brokenContext{"this is a broken context"}
 			},
 		},
 	}
@@ -218,4 +225,25 @@ func TestKey(t *testing.T) {
 
 	}
 
+}
+
+type brokenContext struct {
+	// Contest is specifically *not* of type context.Context
+	Context string
+}
+
+func (*brokenContext) Deadline() (deadline time.Time, ok bool) {
+	return
+}
+
+func (*brokenContext) Done() <-chan struct{} {
+	return nil
+}
+
+func (*brokenContext) Err() error {
+	return nil
+}
+
+func (*brokenContext) Value(key interface{}) interface{} {
+	return nil
 }
