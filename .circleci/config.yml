@@ -1,0 +1,13 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/golang:1.9
+
+    working_directory: /go/src/github.com/joshdk/contents
+    steps:
+      - checkout
+      - run: ./godelw version
+      - run: ./godelw verify --apply=false
+      - run: ./godelw test cover --coverage-output=coverage.txt
+      - run: bash <(curl -s https://codecov.io/bash)
