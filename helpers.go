@@ -33,3 +33,28 @@ func Keys(ctx context.Context) []interface{} {
 
 	return keys
 }
+
+// Pairs will return every key:value pair contained withing the context, in the
+// order in which they were originally added. Returned pair keys may be
+// duplicates, but only because duplicates keys were added to the given
+// context.
+func Pairs(ctx context.Context) []Pair {
+	var pairs []Pair
+
+	// Do we have a parent context?
+	parent := Unwrap(ctx)
+	if parent != nil {
+		// Extract pairs from parent first
+		pairs = Pairs(parent)
+	}
+
+	// Do we have a key, and by extension, a value?
+	if key, found := Key(ctx); found {
+		pairs = append(pairs, Pair{
+			Key:   key,
+			Value: ctx.Value(key),
+		})
+	}
+
+	return pairs
+}
